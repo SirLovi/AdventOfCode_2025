@@ -1,0 +1,20 @@
+[package]
+name = "aoc2025"
+version = "0.1.0"
+edition = "2021"
+authors = ["AoC Prep <you@example.com>"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+anyhow = "1"
+itertools = "0.12"
+# Pinned for compatibility with older toolchains (rustc 1.63+).
+regex = "1.7"
+reqwest = { version = "0.11.22", default-features = false, features = [
+    "blocking",
+    "native-tls",
+] }
+
+[[bin]]
+name = "day01"
+path = "Day_01/day01.rs"
