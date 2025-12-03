@@ -4,14 +4,72 @@ use aoc2025::{
 };
 use std::env;
 
+const DAY: u8 = 1;
+
 fn part1(input: &str) -> Result<i64> {
-    let count = lines(input).count() as i64;
-    Ok(count)
+    let mut pos: i64 = 50;
+    let mut zeros = 0;
+
+    for (dir, dist) in parse(input)? {
+        let delta = if dir == 'R' { dist } else { -dist };
+        pos = (pos + delta).rem_euclid(100);
+        if pos == 0 {
+            zeros += 1;
+        }
+    }
+
+    Ok(zeros)
 }
 
 fn part2(input: &str) -> Result<i64> {
-    let total: i64 = input.lines().map(|l| l.len() as i64).sum();
-    Ok(total)
+    let mut pos: i64 = 50;
+    let mut zeros = 0;
+
+    for (dir, dist) in parse(input)? {
+        zeros += zero_hits(pos, dir, dist);
+
+        let delta = if dir == 'R' { dist } else { -dist };
+        pos = (pos + delta).rem_euclid(100);
+    }
+
+    Ok(zeros)
+}
+
+fn parse(input: &str) -> Result<Vec<(char, i64)>> {
+    let mut res = Vec::new();
+    for line in lines(input).filter(|l| !l.is_empty()) {
+        let (dch, num) = line.split_at(1);
+        let dir = match dch.chars().next() {
+            Some(c @ ('L' | 'R')) => c,
+            _ => bail!("Invalid direction in line: {line}"),
+        };
+        let dist: i64 = num.parse()?;
+        res.push((dir, dist));
+    }
+    Ok(res)
+}
+
+fn zero_hits(pos: i64, dir: char, steps: i64) -> i64 {
+    if steps == 0 {
+        return 0;
+    }
+
+    let m = 100i64;
+    let pos = pos.rem_euclid(m);
+
+    let first = match dir {
+        'R' => (m - pos) % m,
+        'L' => pos % m,
+        _ => unreachable!(),
+    };
+
+    let first = if first == 0 { m } else { first };
+
+    if steps < first {
+        0
+    } else {
+        1 + (steps - first) / m
+    }
 }
 
 #[derive(Debug, Default)]
@@ -61,25 +119,27 @@ fn parse_args() -> Result<Args> {
 fn print_usage() {
     eprintln!(
         "\
-Day 01 runner
+Day {day} runner
   --part <1|2>     Force part (default: detect instructions-two.md)
-  --year <YYYY>    Override year (default: {})
-  --example        Use Example_01.txt if present
+  --year <YYYY>    Override year (default: {default_year})
+  --example        Use Example_{day_pad}.txt if present
   --submit         Submit the computed answer
   --no-confirm     Skip prompt when submitting
 ",
-        DEFAULT_YEAR
+        day = DAY,
+        day_pad = "01",
+        default_year = DEFAULT_YEAR
     );
 }
 
 fn main() -> Result<()> {
     let args = parse_args()?;
-    let part = args.part.unwrap_or_else(|| detect_part(1));
+    let part = args.part.unwrap_or_else(|| detect_part(DAY));
 
     let raw = if args.example {
-        load_example(1)?
+        load_example(DAY)?
     } else {
-        get_input(1, args.year)?
+        get_input(DAY, args.year)?
     };
 
     let (ans1, t1) = time(|| part1(&raw).unwrap());
@@ -99,7 +159,7 @@ fn main() -> Result<()> {
             confirm_prompt()?;
         }
 
-        let verdict = submit_answer(1, part, answer, args.year)?;
+        let verdict = submit_answer(DAY, part, answer, args.year)?;
         println!("Submission verdict: {verdict}");
     }
 

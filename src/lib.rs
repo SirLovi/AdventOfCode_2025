@@ -39,28 +39,33 @@ pub fn get_input(day: u8, year: i32) -> Result<String> {
 }
 
 fn read_cached_input(day: u8) -> Option<String> {
-    input_candidates(day)
-        .into_iter()
-        .find_map(|path| fs::read_to_string(path).ok())
+    for path in input_paths(day) {
+        if let Ok(contents) = fs::read_to_string(&path) {
+            return Some(contents);
+        }
+    }
+    None
 }
 
 fn cache_input(day: u8, contents: &str) -> Result<()> {
-    for path in input_candidates(day) {
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(&path, contents)
-            .with_context(|| format!("Failed to write input cache: {}", path.display()))?;
+    let path = canonical_input_path(day);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
     }
+    fs::write(&path, contents)
+        .with_context(|| format!("Failed to write input cache: {}", path.display()))?;
     Ok(())
 }
 
-fn input_candidates(day: u8) -> Vec<PathBuf> {
-    vec![
-        PathBuf::from(format!("Day_{day:02}/input.txt")),
-        PathBuf::from(format!("Day_{day:02}/input_{day:02}.txt")),
-        PathBuf::from(format!("Day_{day:02}/input_{day}.txt")),
-    ]
+fn canonical_input_path(day: u8) -> PathBuf {
+    PathBuf::from(format!("Day_{day:02}/input_{day:02}.txt"))
+}
+
+fn input_paths(day: u8) -> Vec<PathBuf> {
+    let mut paths = vec![canonical_input_path(day)];
+    paths.push(PathBuf::from(format!("Day_{day:02}/input.txt")));
+    paths.push(PathBuf::from(format!("Day_{day:02}/input_{day}.txt")));
+    paths
 }
 
 /// Split input into trimmed lines (keeps empty lines if present).

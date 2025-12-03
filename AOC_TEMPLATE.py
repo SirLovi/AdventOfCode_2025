@@ -3,7 +3,7 @@ Minimal AoC solution harness to be copied per day.
 
 Features:
 - Reads session cookie from env `AOC_SESSION_ID` or `SessionID.txt` in the day folder or repo root.
-- Fetches and caches puzzle input as `input.txt` (and `input_XX.txt` for compatibility).
+- Fetches and caches puzzle input as `input_XX.txt`.
 - Detects the current day from the directory name (e.g. Day_04) and picks part 2 automatically when
   `instructions-two.md` exists.
 - Optional submission with prompt to avoid accidental posts.
@@ -76,8 +76,8 @@ session = requests.Session()
 session.headers.update({"cookie": f"session={SESSION_ID}", "User-Agent": USER_AGENT})
 
 INPUT_CANDIDATES = [
-    BASE_DIR / "input.txt",
     BASE_DIR / f"input_{DAY:02d}.txt",
+    BASE_DIR / "input.txt",
     BASE_DIR / f"input_{DAY}.txt",
 ]
 
@@ -95,12 +95,8 @@ def read_cached_input() -> str | None:
 
 
 def cache_input(contents: str) -> None:
-    primary = BASE_DIR / "input.txt"
+    primary = BASE_DIR / f"input_{DAY:02d}.txt"
     primary.write_text(contents)
-
-    alt = BASE_DIR / f"input_{DAY:02d}.txt"
-    if alt != primary:
-        alt.write_text(contents)
 
 
 def fetch_input(day: int, year: int) -> str:
@@ -240,6 +236,6 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception as exc:  # keep simple for contest speed
+    except Exception as exc:
         logger.error(f"Error: {exc}")
         raise

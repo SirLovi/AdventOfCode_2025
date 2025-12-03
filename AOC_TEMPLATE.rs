@@ -1,27 +1,13 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ $# -ne 1 ]]; then
-  echo "Usage: scripts/new_day.sh <day-number>" >&2
-  exit 1
-fi
-
-DAY_NUM=$1
-DAY=$(printf "%02d" "$DAY_NUM")
-ROOT=$(cd "$(dirname "$0")/.." && pwd)
-DAY_DIR="$ROOT/Day_${DAY}"
-BIN_PATH="$DAY_DIR/day${DAY}.rs"
-
-mkdir -p "$DAY_DIR"
-
-if [[ ! -f "$BIN_PATH" ]]; then
-  cat > "$BIN_PATH" <<EOR
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use aoc2025::{
     confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time, DEFAULT_YEAR,
 };
 
-const DAY: u8 = ${DAY_NUM};
+const DAY: u8 = {
+    {
+        DAY
+    }
+};
 
 fn part1(input: &str) -> Result<i64> {
     // TODO: implement real logic
@@ -54,13 +40,13 @@ fn parse_args() -> Result<Args> {
             "--part" => {
                 let val = iter
                     .next()
-                    .ok_or_else(|| anyhow::anyhow!("--part requires a value"))?;
+                    .ok_or_else(|| anyhow!("--part requires a value"))?;
                 args.part = Some(val.parse()?);
             }
             "--year" => {
                 let val = iter
                     .next()
-                    .ok_or_else(|| anyhow::anyhow!("--year requires a value"))?;
+                    .ok_or_else(|| anyhow!("--year requires a value"))?;
                 args.year = val.parse()?;
             }
             "--example" => args.example = true,
@@ -80,14 +66,16 @@ fn parse_args() -> Result<Args> {
 fn print_usage() {
     eprintln!(
         "\
-Day {DAY} runner
+Day {day} runner
   --part <1|2>     Force part (default: detect instructions-two.md)
-  --year <YYYY>    Override year (default: {})
-  --example        Use Example_{DAY:02}.txt if present
+  --year <YYYY>    Override year (default: {default_year})
+  --example        Use Example_{day_pad}.txt if present
   --submit         Submit the computed answer
   --no-confirm     Skip prompt when submitting
 ",
-        DEFAULT_YEAR
+        day = DAY,
+        day_pad = "{{DAY_PAD}}",
+        default_year = DEFAULT_YEAR
     );
 }
 
@@ -124,20 +112,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-EOR
-  echo "Created $BIN_PATH"
-else
-  echo "Bin already exists: $BIN_PATH"
-fi
-
-# Add [[bin]] entry if missing
-if ! grep -q "name = \"day${DAY}\"" "$ROOT/Cargo.toml"; then
-  cat >> "$ROOT/Cargo.toml" <<EOT
-[[bin]]
-name = "day${DAY}"
-path = "Day_${DAY}/day${DAY}.rs"
-EOT
-  echo "Registered bin day${DAY} in Cargo.toml"
-else
-  echo "Bin day${DAY} already registered in Cargo.toml"
-fi
