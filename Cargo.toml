@@ -18,3 +18,6 @@ reqwest = { version = "0.12.24", default-features = false, features = [
 [[bin]]
 name = "day01"
 path = "Day_01/day01.rs"
+[[bin]]
+name = "day02"
+path = "Day_02/day02.rs"

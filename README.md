@@ -11,17 +11,18 @@ Scaffold to fetch puzzles and run Python/Rust solutions with shared helpers for 
 ## Fetch everything
 ```bash
 python RUN_EVERY_DAY.py --year 2025
-# Additional options:
-# --start-day 1 //
-# --end-day 24 //
-# --delay //
-# --skip-template //
-# --force-template //
-# --no-rust //
-# --rust-template AOC_TEMPLATE.rs //
-# --session <cookie>
 ```
 Creates `Day_XX` with instructions, example, `input_XX.txt`, copies `AOC_TEMPLATE.py`, and scaffolds `dayXX.rs` (registers in `Cargo.toml`).
+
+Additional options:
+- `--start-day 1`
+- `--end-day 24`
+- `--delay`
+- `--skip-template`
+- `--force-template`
+- `--no-rust`
+- `--rust-template AOC_TEMPLATE.rs`
+- `--session <cookie>`
 
 ## Run Python
 ```bash
@@ -35,6 +36,12 @@ python Day_01/Solution_01.py --submit        # add --no-confirm to skip prompt
 ```bash
 cargo run --bin day01                        # prints both parts
 cargo run --bin day01 -- --example           # use example
-cargo run --bin day01 -- --part 2 --submit   # add --no-confirm to skip prompt
+cargo run --bin day01 -- --part 1 --submit   # add --no-confirm to skip prompt
 ```
-Shared helpers (input cache, part detect, submit, timing) live in `src/lib.rs`. Inputs cache to `Day_XX/input_XX.txt` (legacy `input.txt` still read if present).
+Shared helpers live in `src/lib.rs` (input cache, part detect, submit, timing). Extras you can lean on:
+- `time_result` to time fallible work without `unwrap`.
+- `ints` / `uints` extract numbers from messy text.
+- `Point`, `Dir4`, `in_bounds`, `neighbors4/8` for grid work.
+- `counts`, `bfs_distances`, `dijkstra` for quick graph tasks.
+- `gcd` / `lcm`, `digits`, `transpose` for common puzzle math.
+Inputs cache to `Day_XX/input_XX.txt` (legacy `input.txt` still read if present).

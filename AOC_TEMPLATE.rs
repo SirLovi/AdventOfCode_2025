@@ -1,6 +1,7 @@
 use anyhow::{anyhow, bail, Result};
 use aoc2025::{
-    confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time, DEFAULT_YEAR,
+    confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time_result,
+    DEFAULT_YEAR,
 };
 
 const DAY: u8 = {
@@ -89,10 +90,10 @@ fn main() -> Result<()> {
         get_input(DAY, args.year)?
     };
 
-    let (ans1, t1) = time(|| part1(&raw).unwrap());
+    let (ans1, t1) = time_result(|| part1(&raw))?;
     println!("Part 1: {ans1} ({t1} ms)");
 
-    let (ans2, t2) = time(|| part2(&raw).unwrap());
+    let (ans2, t2) = time_result(|| part2(&raw))?;
     println!("Part 2: {ans2} ({t2} ms)");
 
     if args.submit {

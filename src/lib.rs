@@ -1,3 +1,4 @@
+use std::collections::{HashMap, VecDeque};
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -91,6 +92,225 @@ pub fn time<R, F: FnOnce() -> R>(f: F) -> (R, u128) {
     let res = f();
     let elapsed = start.elapsed().as_millis();
     (res, elapsed)
+}
+
+/// Time a fallible closure and propagate its error, returning `(result, elapsed_ms)`.
+pub fn time_result<R, F: FnOnce() -> Result<R>>(f: F) -> Result<(R, u128)> {
+    let start = std::time::Instant::now();
+    let res = f()?;
+    let elapsed = start.elapsed().as_millis();
+    Ok((res, elapsed))
+}
+
+/// Extract all signed integers from arbitrary text (useful when numbers are embedded in prose).
+pub fn ints(input: &str) -> Vec<i64> {
+    input
+        .split(|c: char| !(c.is_ascii_digit() || c == '-'))
+        .filter(|tok| !tok.is_empty() && tok != &"-")
+        .filter_map(|tok| tok.parse::<i64>().ok())
+        .collect()
+}
+
+/// Extract all unsigned integers from arbitrary text.
+pub fn uints(input: &str) -> Vec<u64> {
+    input
+        .split(|c: char| !c.is_ascii_digit())
+        .filter(|tok| !tok.is_empty())
+        .filter_map(|tok| tok.parse::<u64>().ok())
+        .collect()
+}
+
+/// Parse a string into individual numeric digits, ignoring any non-digit characters.
+pub fn digits(input: &str) -> Vec<u8> {
+    input
+        .chars()
+        .filter_map(|c| c.to_digit(10).map(|d| d as u8))
+        .collect()
+}
+
+/// Greatest common divisor (Euclidean algorithm).
+pub fn gcd(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let r = a % b;
+        a = b;
+        b = r;
+    }
+    a.abs()
+}
+
+/// Least common multiple; returns 0 if either operand is 0.
+pub fn lcm(a: i64, b: i64) -> i64 {
+    if a == 0 || b == 0 {
+        0
+    } else {
+        (a / gcd(a, b)) * b
+    }
+}
+
+/// Grid point with integer coordinates (x increases right, y increases down).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Point {
+    pub x: i64,
+    pub y: i64,
+}
+
+impl Point {
+    /// Construct a new point.
+    pub const fn new(x: i64, y: i64) -> Self {
+        Self { x, y }
+    }
+
+    /// Manhattan distance to another point.
+    pub fn manhattan(self, other: Point) -> i64 {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
+
+    /// 4-neighborhood (right, left, down, up).
+    pub fn neighbors4(self) -> [Point; 4] {
+        [
+            Point::new(self.x + 1, self.y),
+            Point::new(self.x - 1, self.y),
+            Point::new(self.x, self.y + 1),
+            Point::new(self.x, self.y - 1),
+        ]
+    }
+
+    /// 8-neighborhood (including diagonals).
+    pub fn neighbors8(self) -> [Point; 8] {
+        [
+            Point::new(self.x + 1, self.y),
+            Point::new(self.x - 1, self.y),
+            Point::new(self.x, self.y + 1),
+            Point::new(self.x, self.y - 1),
+            Point::new(self.x + 1, self.y + 1),
+            Point::new(self.x + 1, self.y - 1),
+            Point::new(self.x - 1, self.y + 1),
+            Point::new(self.x - 1, self.y - 1),
+        ]
+    }
+}
+
+/// Cardinal directions for grid problems.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Dir4 {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl Dir4 {
+    pub const ALL: [Dir4; 4] = [Dir4::Up, Dir4::Down, Dir4::Left, Dir4::Right];
+
+    /// Return the delta vector for this direction.
+    pub fn delta(self) -> Point {
+        match self {
+            Dir4::Up => Point::new(0, -1),
+            Dir4::Down => Point::new(0, 1),
+            Dir4::Left => Point::new(-1, 0),
+            Dir4::Right => Point::new(1, 0),
+        }
+    }
+}
+
+/// Add two points component-wise.
+pub fn add_point(a: Point, b: Point) -> Point {
+    Point::new(a.x + b.x, a.y + b.y)
+}
+
+/// Check whether a point lies inside a `width x height` rectangle (origin at top-left, exclusive upper bounds).
+pub fn in_bounds(pt: Point, width: i64, height: i64) -> bool {
+    pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height
+}
+
+/// Count frequency of items in an iterator; returns a `HashMap` of value -> count.
+pub fn counts<T: Eq + std::hash::Hash>(iter: impl IntoIterator<Item = T>) -> HashMap<T, usize> {
+    let mut map = HashMap::new();
+    for item in iter {
+        *map.entry(item).or_insert(0) += 1;
+    }
+    map
+}
+
+/// Multi-source BFS over an unweighted graph; returns a distance map from all starts.
+pub fn bfs_distances<T, I, F>(
+    starts: impl IntoIterator<Item = T>,
+    mut neighbors: F,
+) -> HashMap<T, usize>
+where
+    T: Eq + std::hash::Hash + Copy,
+    F: FnMut(T) -> I,
+    I: IntoIterator<Item = T>,
+{
+    let mut dist = HashMap::new();
+    let mut q = VecDeque::new();
+
+    for s in starts {
+        dist.insert(s, 0);
+        q.push_back(s);
+    }
+
+    while let Some(cur) = q.pop_front() {
+        let next_d = dist[&cur] + 1;
+        for nxt in neighbors(cur) {
+            if dist.contains_key(&nxt) {
+                continue;
+            }
+            dist.insert(nxt, next_d);
+            q.push_back(nxt);
+        }
+    }
+
+    dist
+}
+
+/// Simple Dijkstra; neighbors yield `(node, cost)` and the function returns the distance map.
+/// Meant for small/medium AoC graphs—no early-exit target to keep the API minimal.
+pub fn dijkstra<T, I, F>(start: T, mut neighbors: F) -> HashMap<T, u64>
+where
+    T: Eq + std::hash::Hash + Copy + Ord,
+    F: FnMut(T) -> I,
+    I: IntoIterator<Item = (T, u64)>,
+{
+    use std::cmp::Reverse;
+    use std::collections::BinaryHeap;
+
+    let mut dist: HashMap<T, u64> = HashMap::new();
+    let mut heap = BinaryHeap::new();
+    dist.insert(start, 0);
+    heap.push((Reverse(0u64), start));
+
+    while let Some((Reverse(d), node)) = heap.pop() {
+        if d != dist[&node] {
+            continue; // stale entry
+        }
+        for (nxt, w) in neighbors(node) {
+            let nd = d + w;
+            let entry = dist.entry(nxt).or_insert(u64::MAX);
+            if nd < *entry {
+                *entry = nd;
+                heap.push((Reverse(nd), nxt));
+            }
+        }
+    }
+
+    dist
+}
+
+/// Transpose a rectangular matrix (allocates a new Vec<Vec<T>>); panics if rows are ragged.
+pub fn transpose<T: Clone>(grid: &[Vec<T>]) -> Vec<Vec<T>> {
+    if grid.is_empty() {
+        return Vec::new();
+    }
+    let rows = grid.len();
+    let cols = grid[0].len();
+    let mut out = vec![vec![grid[0][0].clone(); rows]; cols];
+    for r in 0..rows {
+        for c in 0..cols {
+            out[c][r] = grid[r][c].clone();
+        }
+    }
+    out
 }
 
 /// Attempt to load session id from env var or SessionID.txt (day folder first, then repo root).

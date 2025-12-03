@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
 use aoc2025::{
-    confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time, DEFAULT_YEAR,
+    confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time_result,
+    DEFAULT_YEAR,
 };
 use std::env;
 
@@ -50,12 +51,13 @@ fn parse(input: &str) -> Result<Vec<(char, i64)>> {
 }
 
 fn zero_hits(pos: i64, dir: char, steps: i64) -> i64 {
-    if steps == 0 {
-        return 0;
-    }
-
     let m = 100i64;
     let pos = pos.rem_euclid(m);
+    let mut hits = if pos == 0 { 1 } else { 0 };
+
+    if steps == 0 {
+        return hits;
+    }
 
     let first = match dir {
         'R' => (m - pos) % m,
@@ -65,11 +67,11 @@ fn zero_hits(pos: i64, dir: char, steps: i64) -> i64 {
 
     let first = if first == 0 { m } else { first };
 
-    if steps < first {
-        0
-    } else {
-        1 + (steps - first) / m
+    if steps >= first {
+        hits += 1 + (steps - first) / m;
     }
+
+    hits
 }
 
 #[derive(Debug, Default)]
@@ -142,10 +144,10 @@ fn main() -> Result<()> {
         get_input(DAY, args.year)?
     };
 
-    let (ans1, t1) = time(|| part1(&raw).unwrap());
+    let (ans1, t1) = time_result(|| part1(&raw))?;
     println!("Part 1: {ans1} ({t1} ms)");
 
-    let (ans2, t2) = time(|| part2(&raw).unwrap());
+    let (ans2, t2) = time_result(|| part2(&raw))?;
     println!("Part 2: {ans2} ({t2} ms)");
 
     if args.submit {
