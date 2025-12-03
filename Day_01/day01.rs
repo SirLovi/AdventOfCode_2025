@@ -7,34 +7,9 @@ use std::env;
 
 const DAY: u8 = 1;
 
-fn part1(input: &str) -> Result<i64> {
-    let mut pos: i64 = 50;
-    let mut zeros = 0;
-
-    for (dir, dist) in parse(input)? {
-        let delta = if dir == 'R' { dist } else { -dist };
-        pos = (pos + delta).rem_euclid(100);
-        if pos == 0 {
-            zeros += 1;
-        }
-    }
-
-    Ok(zeros)
-}
-
-fn part2(input: &str) -> Result<i64> {
-    let mut pos: i64 = 50;
-    let mut zeros = 0;
-
-    for (dir, dist) in parse(input)? {
-        zeros += zero_hits(pos, dir, dist);
-
-        let delta = if dir == 'R' { dist } else { -dist };
-        pos = (pos + delta).rem_euclid(100);
-    }
-
-    Ok(zeros)
-}
+//##################################################################################################
+// Parsing & Data Prep & Puzzle Logic
+//##################################################################################################
 
 fn parse(input: &str) -> Result<Vec<(char, i64)>> {
     let mut res = Vec::new();
@@ -73,6 +48,43 @@ fn zero_hits(pos: i64, dir: char, steps: i64) -> i64 {
 
     hits
 }
+
+//##################################################################################################
+// Solutions
+//##################################################################################################
+
+fn part1(input: &str) -> Result<i64> {
+    let mut pos: i64 = 50;
+    let mut zeros = 0;
+
+    for (dir, dist) in parse(input)? {
+        let delta = if dir == 'R' { dist } else { -dist };
+        pos = (pos + delta).rem_euclid(100);
+        if pos == 0 {
+            zeros += 1;
+        }
+    }
+
+    Ok(zeros)
+}
+
+fn part2(input: &str) -> Result<i64> {
+    let mut pos: i64 = 50;
+    let mut zeros = 0;
+
+    for (dir, dist) in parse(input)? {
+        zeros += zero_hits(pos, dir, dist);
+
+        let delta = if dir == 'R' { dist } else { -dist };
+        pos = (pos + delta).rem_euclid(100);
+    }
+
+    Ok(zeros)
+}
+
+//##################################################################################################
+// CLI Arguments
+//##################################################################################################
 
 #[derive(Debug, Default)]
 struct Args {
@@ -133,6 +145,10 @@ Day {day} runner
         default_year = DEFAULT_YEAR
     );
 }
+
+//##################################################################################################
+// Entry Point
+//##################################################################################################
 
 fn main() -> Result<()> {
     let args = parse_args()?;

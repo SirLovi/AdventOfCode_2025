@@ -25,11 +25,28 @@ DEFAULT_USER_AGENT = os.environ.get(
     "github.com/your-handle/AdventOfCode_2025 (please set AOC_USER_AGENT with contact info)",
 )
 
+##################################################################################################
+# Rust fallback template
+##################################################################################################
+
 RUST_FALLBACK = """\
 use anyhow::{anyhow, bail, Result};
 use aoc2025::{confirm_prompt, detect_part, get_input, lines, load_example, submit_answer, time, DEFAULT_YEAR};
 
 const DAY: u8 = {{DAY}};
+
+//##################################################################################################
+// Parsing & Data Prep & Puzzle Logic
+//##################################################################################################
+
+fn parse(input: &str) -> Result<&str> {
+    // TODO: implement real logic
+    Ok(input)
+}
+
+//##################################################################################################
+// Solutions
+//##################################################################################################
 
 fn part1(input: &str) -> Result<i64> {
     // TODO: implement real logic
@@ -40,6 +57,10 @@ fn part2(input: &str) -> Result<i64> {
     // TODO: implement real logic
     Ok(input.lines().map(|l| l.len() as i64).sum())
 }
+
+//##################################################################################################
+// CLI Arguments
+//##################################################################################################
 
 #[derive(Debug, Default)]
 struct Args {
@@ -99,6 +120,10 @@ Day {day} runner
     );
 }
 
+//##################################################################################################
+// Entry Point
+//##################################################################################################
+
 fn main() -> Result<()> {
     let args = parse_args()?;
     let part = args.part.unwrap_or_else(|| detect_part(DAY));
@@ -134,6 +159,11 @@ fn main() -> Result<()> {
 }
 """
 
+
+##################################################################################################
+# Logging
+##################################################################################################
+
 logging.basicConfig(
     filename="aoc_fetch.log",
     level=logging.INFO,
@@ -141,6 +171,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
+
+
+##################################################################################################
+# Session & HTTP helpers
+##################################################################################################
 
 
 def load_session(explicit: str | None = None) -> str:
@@ -167,6 +202,11 @@ def build_session(session_id: str) -> requests.Session:
     return sess
 
 
+##################################################################################################
+# File & HTML helpers
+##################################################################################################
+
+
 def save_markdown(article, path: Path) -> None:
     h = html2text.HTML2Text()
     h.body_width = 0
@@ -182,6 +222,11 @@ def extract_example(soup: BeautifulSoup) -> str | None:
     if block:
         return block.get_text("\n").rstrip("\n")
     return None
+
+
+##################################################################################################
+# Scaffolding helpers
+##################################################################################################
 
 
 def precreate_day(
@@ -245,6 +290,11 @@ def register_bin_in_cargo(day: int, cargo_toml: Path) -> None:
     block = "\n[[bin]]\n" f'name = "{name}"\n' f'path = "Day_{day:02d}/{name}.rs"\n'
     cargo_toml.write_text(text.rstrip() + block + "\n")
     logger.info(f"Registered bin {name} in Cargo.toml")
+
+
+##################################################################################################
+# Fetch pipeline
+##################################################################################################
 
 
 def process_day(
@@ -315,6 +365,11 @@ def process_day(
 
     logger.info(f"Day {day}: done")
     return True
+
+
+##################################################################################################
+# CLI
+##################################################################################################
 
 
 def main():

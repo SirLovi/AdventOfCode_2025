@@ -4,21 +4,34 @@ use aoc2025::{
     DEFAULT_YEAR,
 };
 
-const DAY: u8 = {
-    {
-        DAY
-    }
-};
+const DAY: u8 = DAY;
+
+//##################################################################################################
+// Parsing & Data Prep & Puzzle Logic
+//##################################################################################################
+
+fn parse(input: &str) -> Result<Vec<(char, i64)>> {
+    // TODO: implement real logic here
+    Ok(input)
+}
+
+//##################################################################################################
+// Solutions
+//##################################################################################################
 
 fn part1(input: &str) -> Result<i64> {
-    // TODO: implement real logic
+    // TODO: implement real logic here
     Ok(lines(input).count() as i64)
 }
 
 fn part2(input: &str) -> Result<i64> {
-    // TODO: implement real logic
+    // TODO: implement real logic here
     Ok(input.lines().map(|l| l.len() as i64).sum())
 }
+
+//##################################################################################################
+// CLI Arguments
+//##################################################################################################
 
 #[derive(Debug, Default)]
 struct Args {
@@ -79,6 +92,10 @@ Day {day} runner
         default_year = DEFAULT_YEAR
     );
 }
+
+//##################################################################################################
+// Entry Point
+//##################################################################################################
 
 fn main() -> Result<()> {
     let args = parse_args()?;

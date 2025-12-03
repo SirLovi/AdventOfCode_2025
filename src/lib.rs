@@ -10,6 +10,10 @@ pub const DEFAULT_YEAR: i32 = 2025;
 const USER_AGENT_FALLBACK: &str =
     "github.com/your-handle/AdventOfCode_2025 (please set AOC_USER_AGENT with contact info)";
 
+//##################################################################################################
+// Input Fetching & Caching
+//##################################################################################################
+
 /// Load the puzzle input for the given day. If not cached locally, fetch from AoC and cache.
 pub fn read_input(day: u8) -> Result<String> {
     get_input(day, DEFAULT_YEAR)
@@ -69,6 +73,10 @@ fn input_paths(day: u8) -> Vec<PathBuf> {
     paths
 }
 
+//##################################################################################################
+// Parsing Helpers
+//##################################################################################################
+
 /// Split input into trimmed lines (keeps empty lines if present).
 pub fn lines(input: &str) -> impl Iterator<Item = &str> {
     input.split('\n').map(|s| s.trim_end_matches('\r'))
@@ -86,6 +94,10 @@ pub fn parse_int_grid(input: &str) -> Result<Vec<Vec<i64>>> {
         .collect()
 }
 
+//##################################################################################################
+// Timing Helpers
+//##################################################################################################
+
 /// Helper to time a closure and return (result, elapsed_ms).
 pub fn time<R, F: FnOnce() -> R>(f: F) -> (R, u128) {
     let start = std::time::Instant::now();
@@ -101,6 +113,10 @@ pub fn time_result<R, F: FnOnce() -> Result<R>>(f: F) -> Result<(R, u128)> {
     let elapsed = start.elapsed().as_millis();
     Ok((res, elapsed))
 }
+
+//##################################################################################################
+// Numeric Extraction
+//##################################################################################################
 
 /// Extract all signed integers from arbitrary text (useful when numbers are embedded in prose).
 pub fn ints(input: &str) -> Vec<i64> {
@@ -128,6 +144,10 @@ pub fn digits(input: &str) -> Vec<u8> {
         .collect()
 }
 
+//##################################################################################################
+// Math Utilities
+//##################################################################################################
+
 /// Greatest common divisor (Euclidean algorithm).
 pub fn gcd(mut a: i64, mut b: i64) -> i64 {
     while b != 0 {
@@ -146,6 +166,10 @@ pub fn lcm(a: i64, b: i64) -> i64 {
         (a / gcd(a, b)) * b
     }
 }
+
+//##################################################################################################
+// Grid Primitives
+//##################################################################################################
 
 /// Grid point with integer coordinates (x increases right, y increases down).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -212,6 +236,10 @@ impl Dir4 {
         }
     }
 }
+
+//##################################################################################################
+// Grid & Graph Helpers
+//##################################################################################################
 
 /// Add two points component-wise.
 pub fn add_point(a: Point, b: Point) -> Point {
@@ -313,6 +341,10 @@ pub fn transpose<T: Clone>(grid: &[Vec<T>]) -> Vec<Vec<T>> {
     out
 }
 
+//##################################################################################################
+// Session & Networking
+//##################################################################################################
+
 /// Attempt to load session id from env var or SessionID.txt (day folder first, then repo root).
 pub fn load_session(day: Option<u8>) -> Result<String> {
     if let Ok(env) = std::env::var("AOC_SESSION_ID") {
@@ -356,6 +388,10 @@ fn http_client(user_agent: &str) -> Result<Client> {
         .build()
         .context("Building HTTP client")
 }
+
+//##################################################################################################
+// Submission Helpers
+//##################################################################################################
 
 /// Submission outcome variants.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -432,6 +468,10 @@ fn classify_submission(text: &str) -> SubmissionVerdict {
     }
 }
 
+//##################################################################################################
+// Day Metadata & Examples
+//##################################################################################################
+
 /// Detect part: returns 2 if `instructions-two.md` exists for the day, else 1.
 pub fn detect_part(day: u8) -> u8 {
     let path = PathBuf::from(format!("Day_{day:02}/instructions-two.md"));
@@ -455,6 +495,10 @@ pub fn load_example(day: u8) -> Result<String> {
     }
     Err(anyhow!("No example input found for day {day}"))
 }
+
+//##################################################################################################
+// UX Helpers
+//##################################################################################################
 
 /// Simple prompt helper used before submissions.
 pub fn confirm_prompt() -> Result<()> {
