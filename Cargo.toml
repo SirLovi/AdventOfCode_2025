@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 anyhow = "1"
 itertools = "0.14"
 # Pinned for compatibility with older toolchains (rustc 1.63+).
-regex = "1.7"
+regex = "1.12"
 reqwest = { version = "0.13.2", default-features = false, features = [
     "blocking",
     "native-tls",
